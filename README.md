@@ -5,7 +5,7 @@ Remote attestation
 ===================
 It makes use of the low level remote attestation provided by Dstack:
 ```
-/var/sock/tappd/
+/var/run/tappd.sock
 ```
 
 It does not make use of the KMS. This is important while the KMS is still in a "mock" state.
