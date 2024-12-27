@@ -3,15 +3,15 @@ set -x
 set -e
 
 # Configure to the IP address of the container
-GUEST=172.25.0.2:4001
-GUEST_tO=localhost:4001
+GUEST=172.16.238.10:4001
+#GUEST=localhost:14001
 
 # Configure the API keys
 curl -X POST -H "Content-Type: text/plain" --data-binary @host.env http://$GUEST/configure
-curl http://$GUEST/status
+#curl http://$GUEST/status
 
 # Write some secrets
-sudo cp private.env /tmp/tapp-ramdisk/private.env
+cp private.env /tmp/tapp-ramdisk/private.env
 
 # Request the key
 curl -s -X POST http://$GUEST/requestKey > request.out
@@ -23,4 +23,4 @@ curl -s -X POST -d "pubk=$PUBK" -d "quote=$QUOTE"  http://$GUEST/onboard > onboa
 
 # Post the encrypted state file
 curl -X POST -H "Content-Type: text/plain" --data-binary @onboard.out http://$GUEST/receiveKey
-curl http://$GUEST/status
+#curl http://$GUEST/status

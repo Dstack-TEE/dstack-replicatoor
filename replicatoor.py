@@ -12,15 +12,22 @@ import json
 import sys
 import base64
 import re
+from urllib.parse import urlparse
 
 # Untrusted environment values
-ETH_RPC_URL     = None
+ETH_RPC_URL = None
 
 # Trusted values read from image
-ETH_RPC_PREFIX = os.environ['ETH_RPC_PREFIX']
+HELIOS_PARAM = os.environ['HELIOS_PARAM']  # e.g., opstack --network base
 CONTRACT    = os.environ['CONTRACT']
-CHAIN_ID    = os.environ['CHAIN_ID']
 SECURE_FILE = os.environ['SECURE_FILE']
+
+# Helios light client running as a subprocess
+helios_proc = None
+def run_lightclient():
+    global helios_proc
+    assert helios_proc is None
+    helios_proc = subprocess.Popen(f"/root/helios {HELIOS_PARAM} --execution-rpc {ETH_RPC_URL}", stdin=None, stderr=subprocess.PIPE, stdout=subprocess.PIPE, shell=True, text=True)
 
 # Here's all the key state
 global_state = dict(
@@ -106,12 +113,12 @@ def extract_fmspc(chain):
 
 
 def is_bootstrapped():
-    cmd = f"cast call {CONTRACT} 'xPub()'"
+    cmd = f"cast call --rpc-url=localhost:8545 {CONTRACT} 'xPub()'"
     out = subprocess.check_output(cmd, shell=True).decode('utf-8')
     return out.strip() != "0x"+"0"*64
 
 def check_mrtd(mrtd, rtmr0, rtmr3):
-    cmd = f"cast call {CONTRACT} 'get_mrtd(bytes,bytes,bytes)(bool)' 0x{mrtd} 0x{rtmr0} 0x{rtmr3}"
+    cmd = f"cast call --rpc-url=localhost:8545 {CONTRACT} 'get_mrtd(bytes,bytes,bytes)(bool)' 0x{mrtd} 0x{rtmr0} 0x{rtmr3}"
     out = subprocess.check_output(cmd, shell=True).decode('utf-8')
     return out.strip()
 
@@ -133,7 +140,7 @@ def configure():
     print('Received configuration parameters:', config, file=sys.stderr)
     global ETH_RPC_URL
     os.environ['ETH_RPC_URL'] = ETH_RPC_URL = config['ETH_RPC_URL']
-    assert ETH_RPC_URL.startswith(ETH_RPC_PREFIX)
+    run_lightclient()
     return jsonify({"status": "success", "config": config}), 200
 
 # Return a summary of status

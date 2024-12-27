@@ -1,5 +1,5 @@
 # For building the DCAP validator
-FROM golang:1.22 as go-tdx-builder
+FROM golang:1.22 AS go-tdx-builder
 WORKDIR /root/
 RUN git clone https://github.com/Ruteri/dummy-tdx-dcap
 WORKDIR /root/dummy-tdx-dcap
@@ -21,6 +21,9 @@ RUN tar -xzf ./foundry_nightly_linux_amd64.tar.gz -C /usr/local/bin
 
 # Install the TDX checker
 COPY --from=go-tdx-builder /root/dummy-tdx-dcap/dcap-verifier /usr/local/bin
+
+# Install helios
+RUN curl -L 'https://github.com/a16z/helios/releases/download/0.7.0/helios_linux_amd64.tar.gz' | tar -xzC .
 
 # Python
 WORKDIR /workdir
